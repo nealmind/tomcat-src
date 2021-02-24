@@ -157,6 +157,7 @@ public class StandardContext extends ContainerBase
      * Create a new StandardContext component with the default basic Valve.
      */
     public StandardContext() {
+        
 
         super();
         pipeline.setBasic(new StandardContextValve());

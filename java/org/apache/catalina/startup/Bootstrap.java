@@ -78,6 +78,7 @@ public final class Bootstrap {
         }
 
         if (homeFile == null) {
+            //从bootstrap.jar的上一级目录
             // First fall-back. See if current directory is a bin directory
             // in a normal Tomcat install
             File bootstrapJar = new File(userDir, "bootstrap.jar");
@@ -139,8 +140,13 @@ public final class Bootstrap {
     // -------------------------------------------------------- Private Methods
 
 
+    /**
+     * commonLoader负责扫描catalina.base和catalina.home下的jar及 对应lib下的jar
+     * serverLoader和sharedLoader默认同CommonLoader
+     */
     private void initClassLoaders() {
         try {
+            //创建commonLoader实例，使用catalina.properties文件配置
             commonLoader = createClassLoader("common", null);
             if (commonLoader == null) {
                 // no config file, default to this loader - we might be in a 'single' env.
@@ -156,6 +162,13 @@ public final class Bootstrap {
     }
 
 
+    /**
+     * 根据从catalina.properties文件获取的配置创建classloader
+     * @param name
+     * @param parent
+     * @return
+     * @throws Exception
+     */
     private ClassLoader createClassLoader(String name, ClassLoader parent)
         throws Exception {
 
@@ -247,7 +260,7 @@ public final class Bootstrap {
      * @throws Exception Fatal initialization error
      */
     public void init() throws Exception {
-
+        //初始化Tomcat的classloader
         initClassLoaders();
 
         Thread.currentThread().setContextClassLoader(catalinaLoader);
@@ -257,9 +270,11 @@ public final class Bootstrap {
         // Load our startup class and call its process() method
         if (log.isDebugEnabled())
             log.debug("Loading startup class");
+        //使用catalinaLoader加载Catalina类
         Class<?> startupClass = catalinaLoader.loadClass("org.apache.catalina.startup.Catalina");
         Object startupInstance = startupClass.getConstructor().newInstance();
 
+        //通过反射设置Catalina实例的parentClassLoader为sharedLoader
         // Set the shared extensions class loader
         if (log.isDebugEnabled())
             log.debug("Setting startup class properties");
